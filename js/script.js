@@ -38,7 +38,6 @@ async function displayTVShows() {
   const { results } = await fetchAPIData("tv/popular");
   results.forEach((show) => {
     const div = document.createElement("div");
-    div.classList.add("card");
     div.innerHTML = ` <div class="card">
           <a href="shows.html?id=${show.id}">
             ${
@@ -68,7 +67,66 @@ async function displayTVShows() {
 
 async function getMovieDetails() {
   const movieId = window.location.search.split("=")[1];
-  const result = await fetchAPIData(`movies/${movieId}`);
+  const detail = await fetchAPIData(`movie/${movieId}`);
+  const div = document.createElement("div");
+  div.innerHTML = ` <div class="details-top">
+          <div>
+              ${
+                detail.poster_path
+                  ? `<img
+              src="https://image.tmdb.org/t/p/w500${detail.poster_path}"
+              class="card-img-top"
+              alt=${detail.title}
+            />`
+                  : `<img
+              src="images/no-image.png"
+              class="card-img-top"
+              alt="Movie Title"
+            />`
+              }
+          </div>
+          <div>
+            <h2>${detail.title}</h2>
+            <p>
+              <i class="fas fa-star text-primary"></i>
+              ${detail.vote_average.toFixed(1)}/ 10
+            </p>
+            <p class="text-muted">Release Date: ${detail.release_date}</p>
+            <p>
+            ${detail.overview}
+            </p>
+            <h5>Genres</h5>
+          <ul>
+             ${detail.genres.map((value) => `<li>${value.name}</li>`).join("")}
+          </ul>
+            <a href=${
+              detail.homepage
+            } target="_blank" class="btn">Visit Movie Homepage</a>
+          </div>
+        </div>
+        <div class="details-bottom">
+          <h2>Movie Info</h2>
+          <ul>
+            <li><span class="text-secondary">Budget:</span> $${
+              detail.budget
+            }</li>
+            <li><span class="text-secondary">Revenue:</span> $${
+              detail.revenue
+            }</li>
+            <li><span class="text-secondary">Runtime:</span> ${
+              detail.runtime
+            } minutes</li>
+            <li><span class="text-secondary">Status:</span> ${
+              detail.status
+            }</li>
+          </ul>
+          <h4>Production Companies</h4>
+          <div class="list-group">
+          ${detail.production_companies
+            .map((value) => value.name + "&nbsp; ")
+            .join("")}</div>
+        </div>`;
+  document.querySelector("#movie-details").appendChild(div);
 }
 
 //Fetch data from TMDB API
