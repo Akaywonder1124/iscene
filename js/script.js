@@ -1,15 +1,37 @@
 const global = {
   currentPage: window.location.pathname,
+  search: {
+    term: "",
+    type: "",
+    page: 1,
+    totalPages: 1,
+  },
+  APIKey: "e2121f4c0901b3856a1985143270d754",
+  APIURL: "https://api.themoviedb.org/3/",
 };
 
 //Fetch data from TMDB API
 async function fetchAPIData(endpoint) {
   //LOL, don't COPY. You can get yours at https://www.themoviedb.org/
-  const API_KEY = "e2121f4c0901b3856a1985143270d754";
-  const API_URL = "https://api.themoviedb.org/3/";
+  const API_KEY = global.APIKey;
+  const API_URL = global.APIURL;
   showSpinner();
   const response = await fetch(
     `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US `
+  );
+  const data = await response.json();
+  hideSpinner();
+  return data;
+}
+
+//search API function
+async function searchAPIData() {
+  //LOL, don't COPY. You can get yours at https://www.themoviedb.org/
+  const API_KEY = global.APIKey;
+  const API_URL = global.APIURL;
+  showSpinner();
+  const response = await fetch(
+    `${API_URL}search/${global.search.type}?api_key=${API_KEY}&language=en-US&query=${global.search.term}`
   );
   const data = await response.json();
   hideSpinner();
@@ -250,9 +272,18 @@ function DisplayBackdropImage(type, backgroundPath) {
     document.querySelector("#show-details").appendChild(overlayDiv);
   }
 }
-function search() {
+async function search() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
+  global.search.type = urlParams.get("type");
+  global.search.term = urlParams.get("search-term");
+
+  if (global.search.term !== "" && global.search.term !== null) {
+    const results = await searchAPIData();
+    console.log(results);
+  } else {
+    showAlert("please enter a search term");
+  }
 }
 
 //Display slider
@@ -311,6 +342,14 @@ function initSwiper() {
   });
 }
 
+function showAlert(message, className) {
+  const alertEl = document.createElement("div");
+  alertEl.classList.add("alert", className);
+  alertEl.appendChild(document.createTextNode(message));
+  document.querySelector("#alert").appendChild(alertEl);
+
+  setTimeout(() => alertEl.remove(), 3000);
+}
 function init() {
   switch (global.currentPage) {
     case "/":
