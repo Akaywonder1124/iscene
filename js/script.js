@@ -258,7 +258,7 @@ async function displaySlider() {
     const div = document.createElement("div");
     div.classList.add("swiper-slide");
     div.innerHTML = ` <div class="swiper-slide">
-            <a href="movie-details.html?${results.id}">
+            <a href="movie-details.html?id=${results.id}">
             ${
               results.poster_path
                 ? `<img
@@ -276,30 +276,34 @@ async function displaySlider() {
             </h4>
           </div> `;
     document.querySelector(".swiper-wrapper").appendChild(div);
+    initSwiper();
   });
 }
 //swiper js
-let swiper = new Swiper(".mySwiper", {
-  effect: "coverflow",
-  grabCursor: true,
-  centeredSlides: true,
-  slidesPerView: "auto",
-  coverflowEffect: {
-    rotate: 50,
-    stretch: 0,
-    depth: 500,
-    loop: true,
-    autoplay: {
-      delay: 4000,
-      disableOnInteraction: false,
+
+function initSwiper() {
+  let swiper = new Swiper(".mySwiper", {
+    effect: "coverflow",
+    grabCursor: true,
+    centeredSlides: true,
+    slidesPerView: "auto",
+    coverflowEffect: {
+      rotate: 50,
+      stretch: 0,
+      depth: 500,
+      loop: true,
+      autoplay: {
+        delay: 4000,
+        disableOnInteraction: false,
+      },
+      modifier: 1.5,
+      slideShadows: true,
     },
-    modifier: 1.5,
-    slideShadows: true,
-  },
-  pagination: {
-    el: ".swiper-pagination",
-  },
-});
+    pagination: {
+      el: ".swiper-pagination",
+    },
+  });
+}
 
 function init() {
   switch (global.currentPage) {
