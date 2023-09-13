@@ -2,6 +2,42 @@ const global = {
   currentPage: window.location.pathname,
 };
 
+//Fetch data from TMDB API
+async function fetchAPIData(endpoint) {
+  //LOL, don't COPY. You can get yours at https://www.themoviedb.org/
+  const API_KEY = "e2121f4c0901b3856a1985143270d754";
+  const API_URL = "https://api.themoviedb.org/3/";
+  showSpinner();
+  const response = await fetch(
+    `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US `
+  );
+  const data = await response.json();
+  hideSpinner();
+  return data;
+}
+
+function showSpinner() {
+  document.querySelector(".spinner").classList.add("show");
+}
+function hideSpinner() {
+  document.querySelector(".spinner").classList.remove("show");
+}
+
+function highlightActiveLink() {
+  const links = document.querySelectorAll(".nav-link");
+  links.forEach((link) => {
+    if (link.getAttribute("href") === global.currentPage) {
+      link.classList.add("active");
+    }
+  });
+}
+
+function changeLogo() {
+  const logo = document.querySelector(".logo");
+  const footerLogo = document.querySelector(".logo span");
+  logo.textContent = "iscene";
+  footerLogo.textContent = "iscene";
+}
 async function displayPopularMovies() {
   const { results } = await fetchAPIData("movie/popular");
   results.forEach((movie) => {
@@ -39,7 +75,7 @@ async function displayTVShows() {
   results.forEach((show) => {
     const div = document.createElement("div");
     div.innerHTML = ` <div class="card">
-          <a href="shows.html?id=${show.id}">
+          <a href="tv-details.html?id=${show.id}">
             ${
               show.poster_path
                 ? `<img
@@ -69,6 +105,7 @@ async function getMovieDetails() {
   const movieId = window.location.search.split("=")[1];
   const detail = await fetchAPIData(`movie/${movieId}`);
   const div = document.createElement("div");
+  DisplayBackdropImage("movie", detail.backdrop_path);
   div.innerHTML = ` <div class="details-top">
           <div>
               ${
@@ -129,49 +166,122 @@ async function getMovieDetails() {
   document.querySelector("#movie-details").appendChild(div);
 }
 
+async function getShowDetails() {
+  const movieId = window.location.search.split("=")[1];
+  const detail = await fetchAPIData(`tv/${movieId}`);
+  const div = document.createElement("div");
+  DisplayBackdropImage("show", detail.backdrop_path);
+  div.innerHTML = ` <div class="details-top">
+          <div>
+              ${
+                detail.poster_path
+                  ? `<img
+              src="https://image.tmdb.org/t/p/w500${detail.poster_path}"
+              class="card-img-top"
+              alt=${detail.title}
+            />`
+                  : `<img
+              src="images/no-image.png"
+              class="card-img-top"
+              alt="Movie Title"
+            />`
+              }
+          </div>
+          <div>
+            <h2>${detail.name}</h2>
+            <p>
+              <i class="fas fa-star text-primary"></i>
+              ${detail.vote_average.toFixed(1)}/ 10
+            </p>
+            <p class="text-muted">Release Date: ${detail.first_air_date}</p>
+            <p>
+            ${detail.overview}
+            </p>
+            <h5>Genres</h5>
+          <ul>
+             ${detail.genres.map((value) => `<li>${value.name}</li>`).join("")}
+          </ul>
+            <a href=${
+              detail.homepage
+            } target="_blank" class="btn">Visit Movie Homepage</a>
+          </div>
+        </div>
+        <div class="details-bottom">
+           <h2>Show Info</h2>
+          <ul>
+            <li><span class="text-secondary">Number Of Episodes:</span>${
+              detail.number_of_episodes
+            }</li>
+            <li>
+              <span class="text-secondary">Last Episode To Air:</span> ${
+                detail.last_episode_to_air.name
+              }
+            </li>
+            <li><span class="text-secondary">Status:</span> ${
+              detail.status
+            }</li>
+          </ul>
+          <h4>Production Companies</h4>
+          <div class="list-group">
+          ${detail.production_companies
+            .map((value) => value.name + "&nbsp; ")
+            .join("")}</div>
+        </div>`;
+  document.querySelector("#show-details").appendChild(div);
+}
 //Display backdrop images
-function DisplayBackdropImage() {}
-//Fetch data from TMDB API
-async function fetchAPIData(endpoint) {
-  //LOL, don't COPY. You can get yours at https://www.themoviedb.org/
-  const API_KEY = "e2121f4c0901b3856a1985143270d754";
-  const API_URL = "https://api.themoviedb.org/3/";
-  showSpinner();
-  const response = await fetch(
-    `${API_URL}${endpoint}?api_key=${API_KEY}&language=en-US `
-  );
-  const data = await response.json();
-  hideSpinner();
-  return data;
+function DisplayBackdropImage(type, backgroundPath) {
+  const overlayDiv = document.createElement("div");
+  overlayDiv.style.backgroundImage = `url(https://images.tmdb.org/t/p/original${backgroundPath})`;
+  overlayDiv.style.backgroundSize = "cover";
+  overlayDiv.style.backgroundPosition = "center";
+  overlayDiv.style.backgroundRepeat = "no-repeat";
+  overlayDiv.style.height = "100vh";
+  overlayDiv.style.width = "100vw";
+  overlayDiv.style.position = "absolute";
+  overlayDiv.style.top = "0";
+  overlayDiv.style.left = "0";
+  overlayDiv.style.zIndex = "-1";
+  overlayDiv.style.opacity = "0.1";
+
+  if (type === "movie") {
+    document.querySelector("#movie-details").appendChild(overlayDiv);
+  } else {
+    document.querySelector("#show-details").appendChild(overlayDiv);
+  }
 }
 
-function showSpinner() {
-  document.querySelector(".spinner").classList.add("show");
-}
-function hideSpinner() {
-  document.querySelector(".spinner").classList.remove("show");
-}
-
-function highlightActiveLink() {
-  const links = document.querySelectorAll(".nav-link");
-  links.forEach((link) => {
-    if (link.getAttribute("href") === global.currentPage) {
-      link.classList.add("active");
-    }
+async function displaySlider() {
+  const { results } = await fetchAPIData("movie/now_playing");
+  results.forEach((results) => {
+    const div = document.createElement("div");
+    div.classList.add("swiper-slide");
   });
 }
+//swiper js
+let swiper = new Swiper(".mySwiper", {
+  effect: "coverflow",
+  grabCursor: true,
+  centeredSlides: true,
+  slidesPerView: "auto",
+  coverflowEffect: {
+    rotate: 50,
+    stretch: 0,
+    depth: 100,
+    modifier: 1,
+    slideShadows: true,
+  },
+  pagination: {
+    el: ".swiper-pagination",
+  },
+});
 
-function changeLogo() {
-  const logo = document.querySelector(".logo");
-  const footerLogo = document.querySelector(".logo span");
-  logo.textContent = "iscene";
-  footerLogo.textContent = "iscene";
-}
 function init() {
   switch (global.currentPage) {
     case "/":
     case "/index.html":
       displayPopularMovies();
+      displaySlider();
       break;
     case "/shows.html":
       displayTVShows();
@@ -180,7 +290,7 @@ function init() {
       getMovieDetails();
       break;
     case "/tv-details.html":
-      console.log("Tv Shows");
+      getShowDetails();
       break;
     case "/search.html":
       console.log("Search");

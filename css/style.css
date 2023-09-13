@@ -342,3 +342,20 @@ section h2 {
 .alert-error {
   background: red;
 }
+.swiper {
+  width: 100%;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.swiper-slide {
+  background-position: center;
+  background-size: cover;
+  width: 500px;
+  height: 600px;
+}
+
+.swiper-slide img {
+  display: block;
+  width: 100%;
+}
