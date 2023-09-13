@@ -129,6 +129,8 @@ async function getMovieDetails() {
   document.querySelector("#movie-details").appendChild(div);
 }
 
+//Display backdrop images
+function DisplayBackdropImage() {}
 //Fetch data from TMDB API
 async function fetchAPIData(endpoint) {
   //LOL, don't COPY. You can get yours at https://www.themoviedb.org/
