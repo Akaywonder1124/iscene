@@ -254,8 +254,28 @@ function DisplayBackdropImage(type, backgroundPath) {
 async function displaySlider() {
   const { results } = await fetchAPIData("movie/now_playing");
   results.forEach((results) => {
+    console.log(results);
     const div = document.createElement("div");
     div.classList.add("swiper-slide");
+    div.innerHTML = ` <div class="swiper-slide">
+            <a href="movie-details.html?${results.id}">
+            ${
+              results.poster_path
+                ? `<img
+                  src="https://image.tmdb.org/t/p/w500${results.poster_path}"
+                  alt="Movie Title"
+                />`
+                : ` <img src="/images/no-image.png" alt="Movie Title" />`
+            }
+             
+            </a>
+            <h4 class="swiper-rating">
+              <i class="fas fa-star text-secondary"></i>${results.vote_average.toFixed(
+                1
+              )}/ 10
+            </h4>
+          </div> `;
+    document.querySelector(".swiper-wrapper").appendChild(div);
   });
 }
 //swiper js
@@ -267,8 +287,13 @@ let swiper = new Swiper(".mySwiper", {
   coverflowEffect: {
     rotate: 50,
     stretch: 0,
-    depth: 100,
-    modifier: 1,
+    depth: 500,
+    loop: true,
+    autoplay: {
+      delay: 4000,
+      disableOnInteraction: false,
+    },
+    modifier: 1.5,
     slideShadows: true,
   },
   pagination: {
