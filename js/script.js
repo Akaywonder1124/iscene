@@ -250,11 +250,15 @@ function DisplayBackdropImage(type, backgroundPath) {
     document.querySelector("#show-details").appendChild(overlayDiv);
   }
 }
+function search() {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+}
 
+//Display slider
 async function displaySlider() {
   const { results } = await fetchAPIData("movie/now_playing");
   results.forEach((results) => {
-    console.log(results);
     const div = document.createElement("div");
     div.classList.add("swiper-slide");
     div.innerHTML = ` <div class="swiper-slide">
@@ -269,12 +273,14 @@ async function displaySlider() {
             }
              
             </a>
-            <h4 class="swiper-rating">
+          </div>
+          <h6 class="swiper-rating">
               <i class="fas fa-star text-secondary"></i>${results.vote_average.toFixed(
                 1
               )}/ 10
-            </h4>
-          </div> `;
+            </h6>
+            
+          `;
     document.querySelector(".swiper-wrapper").appendChild(div);
     initSwiper();
   });
@@ -322,7 +328,7 @@ function init() {
       getShowDetails();
       break;
     case "/search.html":
-      console.log("Search");
+      search();
       break;
   }
   highlightActiveLink();
