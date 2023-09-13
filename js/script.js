@@ -5,6 +5,7 @@ const global = {
     type: "",
     page: 1,
     totalPages: 1,
+    totalResults: 1,
   },
   APIKey: "e2121f4c0901b3856a1985143270d754",
   APIURL: "https://api.themoviedb.org/3/",
@@ -31,7 +32,7 @@ async function searchAPIData() {
   const API_URL = global.APIURL;
   showSpinner();
   const response = await fetch(
-    `${API_URL}search/${global.search.type}?api_key=${API_KEY}&language=en-US&query=${global.search.term}`
+    `${API_URL}search/${global.search.type}?api_key=${API_KEY}&language=en-US&query=${global.search.term}&page=${global.search.page}`
   );
   const data = await response.json();
   hideSpinner();
@@ -60,6 +61,7 @@ function changeLogo() {
   logo.textContent = "iscene";
   footerLogo.textContent = "iscene";
 }
+
 async function displayPopularMovies() {
   const { results } = await fetchAPIData("movie/popular");
   results.forEach((movie) => {
@@ -251,6 +253,82 @@ async function getShowDetails() {
         </div>`;
   document.querySelector("#show-details").appendChild(div);
 }
+
+//Display searched Items
+
+function displaySearcheditems(items, type) {
+  document.querySelector("#search-results").innerHTML = "";
+  document.querySelector("#search-results-heading").innerHTML = "";
+  document.querySelector("#pagination").innerHTML = "";
+
+  items.forEach((item) => {
+    const div = document.createElement("div");
+    div.classList.add("card");
+    div.innerHTML = `  <div class="card">
+    ${
+      type === "tv"
+        ? `<a href="tv-details.html?id=${item.id}">`
+        : ` <a href="movie-details.html?id=${item.id}">`
+    }
+     
+          ${
+            item.poster_path
+              ? `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}" class="card-img-top" alt="" />`
+              : `<img src="/images/no-image.png" class="card-img-top" alt="" />`
+          }
+            
+          </a>
+          <div class="card-body">
+            <h5 class="card-title">${
+              type === "tv" ? item.original_name : item.original_title
+            }</h5>
+            <p class="card-text">
+              <small class="text-muted">Release: ${
+                type === "tv" ? item.first_air_date : item.release_date
+              }</small>
+            </p>
+          </div>
+        </div>`;
+    document.querySelector("#search-results-heading").innerHTML = `
+          <h2>
+          ${items.length} of ${global.search.totalResults} Results for ${global.search.term}
+          </h2>
+    `;
+    document.querySelector("#search-results").appendChild(div);
+  });
+  displayPagination();
+
+  //next page
+  document.querySelector("#next").addEventListener("click", async () => {
+    global.search.page++;
+    const { results, total_pages } = await searchAPIData();
+    displaySearcheditems(results);
+  });
+  //prev page
+  document.querySelector("#prev").addEventListener("click", async () => {
+    global.search.page--;
+    const { results, total_pages } = await searchAPIData();
+    displaySearcheditems(results);
+  });
+}
+
+//display pagination
+function displayPagination() {
+  const div = document.createElement("div");
+  div.classList.add("pagination");
+  div.innerHTML = `
+          <button class="btn btn-primary" id="prev">Prev</button>
+          <button class="btn btn-primary" id="next">Next</button>
+          <div class="page-counter">Page ${global.search.page} of ${global.search.totalPages}</div>
+  `;
+  document.querySelector("#pagination").appendChild(div);
+  if (global.search.page === 1) {
+    document.querySelector("#prev").disabled = true;
+  } else if (global.search.page === global.search.totalPages) {
+    document.querySelector("#next").disabled = true;
+  }
+}
+
 //Display backdrop images
 function DisplayBackdropImage(type, backgroundPath) {
   const overlayDiv = document.createElement("div");
@@ -277,12 +355,21 @@ async function search() {
   const urlParams = new URLSearchParams(queryString);
   global.search.type = urlParams.get("type");
   global.search.term = urlParams.get("search-term");
+  const searchedtype = urlParams.get("type");
 
   if (global.search.term !== "" && global.search.term !== null) {
-    const results = await searchAPIData();
-    console.log(results);
+    const { results, page, total_pages, total_results } = await searchAPIData();
+
+    global.search.page = page;
+    global.search.totalPages = total_pages;
+    global.search.totalResults = total_results;
+    if (results.length === 0) {
+      showAlert("Searched item not found", "error");
+    } else {
+      displaySearcheditems(results, searchedtype);
+    }
   } else {
-    showAlert("please enter a search term");
+    showAlert("please enter a search term", "error");
   }
 }
 
@@ -305,11 +392,6 @@ async function displaySlider() {
              
             </a>
           </div>
-          <h6 class="swiper-rating">
-              <i class="fas fa-star text-secondary"></i>${results.vote_average.toFixed(
-                1
-              )}/ 10
-            </h6>
             
           `;
     document.querySelector(".swiper-wrapper").appendChild(div);
